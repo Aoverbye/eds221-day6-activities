@@ -1,0 +1,86 @@
+---
+title: "lobster_exploration"
+author: "Amanda Overbye"
+date: "2024-08-19"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(here)
+library(janitor)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+lobsters <- read_csv(here("data","Lobster_Abundance_All_Years_20210412.csv"), na = c("-99999", "")) %>% 
+  clean_names() %>% 
+  uncount(count)
+```
+
+```{r}
+carapace_total <- lobsters |>
+  group_by(year, site) |>
+  summarize(mean_carapace_size = mean(size_mm, na.rm = TRUE), total_pop = n(), )
+```
+
+```{r}
+ggplot(data = carapace_total, aes(x = year, y = total_pop, group_by(site), color = site)) +
+  geom_point()
+```
+
+```{r}
+lobsters2020 <- lobsters |>
+  filter(year == 2020)
+```
+
+#adding a new column using the "case_when" function
+```{r}
+legal_lobsters <- lobsters2020 |>
+  mutate(legal_lobster_ca = dplyr::case_when(size_mm >= 79.96 ~ "yes",
+                                               size_mm <= 79.96 ~ "no")) |>
+  group_by(site) |>
+  dplyr::count(legal_lobster_ca)
+
+```
+
+```{r}
+ggplot(data = legal_lobsters, aes(x = site, y = n, fill = legal_lobster_ca)) +
+  geom_col(position = "fill") 
+```
+
+```{r}
+ex_a_subset <- lobsters |>
+  filter(site %in% c("IVEE", "CARP", "NAPL"))
+```
+
+```{r}
+ex_a_august <- lobsters |>
+  filter(month == 8)
+```
+
+```{r}
+ex_a_subset_aque <- lobsters |>
+  filter(site == "AQUE")
+```
+
+```{r}
+ex_a_subset_reef <- lobsters |>
+  filter(site != "NAPL")
+```
+
+```{r}
+ex_b_carapace <- lobsters |>
+  group_by(site) |>
+  summarize(mean_ex_b_carpace = mean(size_mm))
+
+#had to end here bc of time
+```
+
+
